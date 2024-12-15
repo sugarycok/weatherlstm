@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>예측 결과 시각화</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .container {
+            margin-top: 30px;
+        }
+        .card {
+            margin-bottom: 30px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .table-center {
+            margin: 0 auto;
+        }
+        .table th, .table td {
+            text-align: center;
+        }
+        .form-group select {
+            border-radius: 0.25rem;
+        }
+        .graph-container {
+            width: 100%;
+            height: auto;
+            position: relative;
+        }
+        .graph-container iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1 class="text-center mb-4">예측 결과 시각화</h1>
+    <p class="text-center mb-4">실제 유입량, 예측 유입량, 그리고 인구수를 비교하여 시각화한 그래프입니다.</p>
+
+    <form method="post" class="mb-4" id="inputForm">
+        <div class="form-group">
+            <label for="sheetSelect" class="form-label">시트 선택</label>
+            <select id="sheetSelect" name="sheet" class="form-control" onchange="this.form.submit()">
+                {% for sheet in sheets %}
+                    <option value="{{ sheet }}" {% if sheet == selected_sheet %}selected{% endif %}>{{ sheet }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label for="graphType" class="form-label">그래프 유형 선택</label>
+            <select id="graphType" name="graphType" class="form-control" onchange="this.form.submit()">
+                <option value="daily" {% if graph_type == 'daily' %}selected{% endif %}>일별</option>
+                <option value="monthly" {% if graph_type == 'monthly' %}selected{% endif %}>월별</option>
+            </select>
+        </div>
+    </form>
+        
+    <div class="card">
+        <div class="card-body">
+            <h2 class="card-title text-center">실제 유입량, 예측 유입량, 인구수</h2>
+            <div class="graph-container">
+                {{ graph_html|safe }}
+            </div>
+        </div>
+    </div>
+    
+    <form method="post" class="mb-4" id="inputForm2">
+        <div class="form-group">
+            <label for="populationGrowth" class="form-label">인구 증감률 조정</label>
+            <input type="range" id="populationGrowth" name="populationGrowth" min="-50" max="50" value="0" class="form-range">
+            <span id="populationGrowthValue">0%</span>
+        </div>
+    
+        <div class="form-group">
+            <label for="precipitationStatus" class="form-label">강수량 상태 선택</label>
+            <select id="precipitationStatus" name="precipitationStatus" class="form-control">
+                <option value="normal" {% if precipitation_status == 'normal' %}selected{% endif %}>평년</option>
+                <option value="drought">가뭄</option>
+                <option value="flood">홍수</option>
+            </select>
+        </div>
+    
+        <button type="submit" class="btn btn-primary">제출</button>
+        <button type="submit" class="btn btn-danger" name="reset">초기화</button>
+    </form>
+    
+    <div class="card">
+        <div class="card-body">
+            <h2 class="card-title text-center">예측 유입량 데이터</h2>
+            <div class="table-responsive">
+                {{ table_html|safe }}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.0.7/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+<script>
+    // 슬라이더 값 업데이트 함수
+    document.getElementById('populationGrowth').addEventListener('input', function() {
+        document.getElementById('populationGrowthValue').innerText = this.value + '%';
+    });
+</script>
+
+</body>
+</html>
